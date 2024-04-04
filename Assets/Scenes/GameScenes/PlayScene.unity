@@ -286,8 +286,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _mapParams:
-    Column: 25
-    Row: 25
+    Column: 5
+    Row: 5
   _hexPrefab: {fileID: 5022648927825364012, guid: 136e9881c80de70468e305d715319ba5, type: 3}
 --- !u!1 &2061863876
 GameObject:
@@ -324,7 +324,7 @@ MonoBehaviour:
   - {fileID: 2061863879}
   _installerPrefabs: []
   _autoRun: 1
-  _parentNewObjectsUnderSceneContext: 1
+  _parentNewObjectsUnderSceneContext: 0
   _contractNames: []
   _parentContractNames: []
 --- !u!4 &2061863878
@@ -355,3 +355,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab80de1aa49894d48a9a131e5d85ce27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _hexMapManager: {fileID: 587533024}

@@ -1,13 +1,17 @@
+using UnityEngine;
 using Zenject;
 //https://github.com/modesttree/Zenject/blob/master/Documentation/Signals.md
 //https://github.com/modesttree/Zenject/blob/master/Documentation/CheatSheet.md
 public class SceneInstaller : MonoInstaller<SceneInstaller>
 {
+    [SerializeField] private HexMapManager _hexMapManager;
     readonly SignalBus _signalBus;
+    
    public override void InstallBindings()
        {
            SignalBusInstaller.Install(Container);
            Container.Bind<SceneInstaller>().AsSingle();
+           Container.Bind<HexMapManager>().FromInstance(_hexMapManager).AsSingle();
            
            /*Container.Bind<PlayerController>().FromInstance(_playerController).AsSingle();
            Container.Bind<AudioManager>().FromInstance(_audioManager).AsSingle();

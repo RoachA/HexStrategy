@@ -12,23 +12,23 @@ public class HexBase
 
    public HexBase(int q, int r)
    {
+      //this.Q = q + (r + (r & 1)) / 2;
       this.Q = q;
       this.R = r;
-      this.S = -(q + r);
+      this.S = -(Q + R);
    }
    
-//return worldspace pos of this hex
-   public Vector3 Position()
+//return world-space pos of this hex
+   public Vector3 WorldPosition()
    {
-      float radius = 1f;
+      float radius = 1.0f;
       float height = radius * 2;
       float width = WIDTH_MULTIPLIER * height;
 
       float horizontal = width;
       float vertical = height * 0.75f;
 
-      var pos = new Vector3(horizontal * (this.Q + this.R / 2f), 0, vertical * this.R);
-
+      var pos = new Vector3(horizontal * (this.Q - this.R % 2 / 2f), 0, -vertical * this.R);
       return pos;
    }
 }
