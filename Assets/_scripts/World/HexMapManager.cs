@@ -6,13 +6,20 @@ using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 using Zenject;
+using Random = UnityEngine.Random;
 
 //https://www.redblobgames.com/grids/hexagons/
 public class HexMapManager : MonoBehaviour
 {
     [Inject] private DiContainer _container;
+    [Inject] private HexTypesContainer _hexTypesContainer;
+    
     [SerializeField] private MapParams _mapParams;
     [SerializeField] private GameObject _hexPrefab;
+
+    [Header("noise params")]
+    [SerializeField] private float PerlinScale;
+    [SerializeField] private float YScale;
 
     private List<GameObject> _hexObjList = new List<GameObject>();
     private Dictionary<HexBase, HexView> _hexToHexViewMap = new Dictionary<HexBase, HexView>();
@@ -43,12 +50,13 @@ public class HexMapManager : MonoBehaviour
     //----------------------->
     private void Start()
     {
-        GenerateMap();
+        GenerateBlankMap();
     }
 
     [Button]
-    public void GenerateMap()
+    public void GenerateBlankMap()
     {
+        //Generates a blank map of ocean.
         ResetMap();
         
         for (int column = 0; column < _mapParams.Column; column++)
@@ -60,12 +68,69 @@ public class HexMapManager : MonoBehaviour
                 obj.name = "Q" + column.ToString() + " R" + row.ToString() + " S" + hex.S;
                 _hexObjList.Add(obj);
                 var view = obj.GetComponent<HexView>();
-                //view._hexMapManager = this;
+                view.InitHexView(_hexTypesContainer.GetSurfaceType(HexSurfaceType.Ocean));
                 _hexToHexViewMap.Add(hex, view);
                 _posVectorToHexBaseMap.Add(new Vector3(hex.Q, hex.R, hex.S), hex);
                 _container.Inject(view);
             }
         }
+
+        SetupLandMass();
+    }
+    
+    //we will run various passes to determine how the map looks. first determine the land mass.
+
+    /// <summary>
+    /// uses a perlin noise filter to determine this.
+    /// </summary>
+    private void SetupLandMass()
+    {
+        var perlinMap = GeneratePerlinNoiseMap(PerlinScale);
+        var noiseList = new List<float>();
+
+        foreach (var val in perlinMap)
+        {
+            noiseList.Add(val);
+        }
+        
+        for (int i = 0; i < _hexObjList.Count; i++)
+        {
+            var height = noiseList[i];
+            
+            if (height > _mapParams.PlainsThreshold) 
+            {
+                var hexView = _hexObjList[i].GetComponent<HexView>(); //todo optimize
+                hexView.InitHexView(_hexTypesContainer.GetSurfaceType(HexSurfaceType.Plains));
+                _hexObjList[i].transform.localScale += YScale * Vector3.up * noiseList[i];
+            } 
+            
+            if (height > _mapParams.MountainsThreshold) 
+            {
+                var hexView = _hexObjList[i].GetComponent<HexView>(); //todo optimize
+                hexView.InitHexView(_hexTypesContainer.GetSurfaceType(HexSurfaceType.Mountain));
+                _hexObjList[i].transform.localScale += Vector3.up * 10;
+            }
+        }
+    }
+    
+    private float[,] GeneratePerlinNoiseMap(float scale) 
+    {
+        float rnd = Random.Range(scale / 2f, scale);
+        
+        float[,] noiseMap = new float[_mapParams.Column, _mapParams.Row];
+
+        for (int y = 0; y < _mapParams.Row; y++) 
+        {
+            for (int x = 0; x < _mapParams.Column; x++) 
+            {
+                float sampleX = x / rnd;
+                float sampleY = y / rnd;
+                float noiseValue = Mathf.PerlinNoise(sampleX, sampleY);
+                noiseMap[x, y] = noiseValue;
+            }
+        }
+
+        return noiseMap;
     }
 
     [Button]
@@ -162,10 +227,18 @@ public struct MapParams
     public int Column;
     public int Row;
 
-    public MapParams(int column, int row)
+    [Header("Terrain Params")]
+    [Range(0, 1f)]
+    public float PlainsThreshold;
+    [Range(0, 1f)]
+    public float MountainsThreshold;
+
+    public MapParams(int column, int row, float plainsThreshold, float mountainsThreshold)
     {
         Row = row;
         Column = column;
+        PlainsThreshold = plainsThreshold;
+        MountainsThreshold = mountainsThreshold;
     }
 }
 

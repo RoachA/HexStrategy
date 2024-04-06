@@ -4,11 +4,23 @@ using Zenject;
 public class HexView : MonoBehaviour
 {
      [Inject] private HexMapManager _hexMapManager;
-     
-     [Header("Debug")]
+
+     [SerializeField] private MeshRenderer _renderer;
+     [SerializeField] private MeshFilter _meshFilter;
+
+     private HexTypeData _hexData;
+         
+    [Header("Debug")]
     [SerializeField] private HexMapManager.Directions _direction;
     [SerializeField] private float _gizmoRadius = 0.25f;
     [SerializeField] private Vector3 _gizmoOffset;
+
+    public void InitHexView(HexTypeData data)
+    {
+        _renderer.sharedMaterial = data.ViewParams.HexBaseMaterial;
+
+        _hexData = data;
+    }
 
 #region Gizmos
     

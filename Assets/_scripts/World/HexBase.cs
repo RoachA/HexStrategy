@@ -9,6 +9,8 @@ public class HexBase
    public readonly int S;
 
    static readonly float WIDTH_MULTIPLIER = Mathf.Sqrt(3) / 2;
+   
+   
 
    public HexBase(int q, int r)
    {
