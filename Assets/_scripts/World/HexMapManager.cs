@@ -5,10 +5,12 @@ using Sirenix.OdinInspector;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
+using Zenject;
 
 //https://www.redblobgames.com/grids/hexagons/
 public class HexMapManager : MonoBehaviour
 {
+    [Inject] private DiContainer _container;
     [SerializeField] private MapParams _mapParams;
     [SerializeField] private GameObject _hexPrefab;
 
@@ -16,6 +18,8 @@ public class HexMapManager : MonoBehaviour
     private Dictionary<HexBase, HexView> _hexToHexViewMap = new Dictionary<HexBase, HexView>();
     private Dictionary<Vector3, HexBase> _posVectorToHexBaseMap = new Dictionary<Vector3, HexBase>();
 
+    //if the row is 0 or even south neighbors must offset +1x
+    //else the north neighbors must offset -1x
     private readonly Dictionary<Directions, Vector3> _directionVectors = new Dictionary<Directions, Vector3>(6)
     {
         {Directions.W, new Vector3(-1, 0, 1)},
@@ -53,12 +57,13 @@ public class HexMapManager : MonoBehaviour
             {
                 HexBase hex = new HexBase(column, row);
                 var obj = Instantiate(_hexPrefab, hex.WorldPosition(), quaternion.identity, this.transform);
-                obj.name = "Q :" + column.ToString() + " R: " + row.ToString() + " S: " + hex.S;
+                obj.name = "Q" + column.ToString() + " R" + row.ToString() + " S" + hex.S;
                 _hexObjList.Add(obj);
                 var view = obj.GetComponent<HexView>();
-                view._hexMapManager = this;
+                //view._hexMapManager = this;
                 _hexToHexViewMap.Add(hex, view);
                 _posVectorToHexBaseMap.Add(new Vector3(hex.Q, hex.R, hex.S), hex);
+                _container.Inject(view);
             }
         }
     }
@@ -109,11 +114,22 @@ public class HexMapManager : MonoBehaviour
     {
         returnedHex = null;
         var directionVector = GetDirectionVector(direction);
+      
         var targetHexID = new Vector3(
             targetHex.Q + directionVector.x, 
             targetHex.R + directionVector.y,
             targetHex.S + directionVector.z
             );
+
+        //IMPORTANT -> fixes odd and even offsets while determining the neighbors. todo this must be the case for whole lot of operations it seems!
+        if (targetHex.R % 2 == 0)
+        {
+            if (direction == Directions.SE || direction == Directions.SW) targetHexID += new Vector3(1, 0, -1);
+        }
+        else
+        {
+            if (direction == Directions.NW || direction == Directions.NE) targetHexID += new Vector3(-1, 0, +1);
+        }
         
         if (_posVectorToHexBaseMap.TryGetValue(targetHexID, out var hex))
         {

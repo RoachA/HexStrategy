@@ -356,3 +356,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _hexMapManager: {fileID: 587533024}
+  _hexTypesContainer: {fileID: 11400000, guid: a6c87928b830e014a9466be20b2a8359, type: 2}

@@ -27,7 +27,7 @@ public class HexBase
 
       float horizontal = width;
       float vertical = height * 0.75f;
-
+      
       var pos = new Vector3(horizontal * (this.Q - this.R % 2 / 2f), 0, -vertical * this.R);
       return pos;
    }

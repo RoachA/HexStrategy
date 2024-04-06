@@ -1,18 +1,17 @@
-using Sirenix.OdinInspector;
-using UnityEditor;
 using UnityEngine;
+using Zenject;
 
 public class HexView : MonoBehaviour
 {
-  //  [Inject] private HexMapManager _hexMapManager;
-    [HideInInspector]
-    public HexMapManager _hexMapManager;
-    
-    [Header("Debug")]
+     [Inject] private HexMapManager _hexMapManager;
+     
+     [Header("Debug")]
     [SerializeField] private HexMapManager.Directions _direction;
     [SerializeField] private float _gizmoRadius = 0.25f;
     [SerializeField] private Vector3 _gizmoOffset;
 
+#region Gizmos
+    
     private void OnDrawGizmosSelected()
     {
         var hex = _hexMapManager.GetHexBaseByView(this);
@@ -54,4 +53,6 @@ public class HexView : MonoBehaviour
             Gizmos.DrawSphere(nachbar.WorldPosition() + _gizmoOffset, _gizmoRadius);
         }
     }
+    
+#endregion
 }

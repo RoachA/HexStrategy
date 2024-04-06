@@ -5,6 +5,10 @@ using Zenject;
 public class SceneInstaller : MonoInstaller<SceneInstaller>
 {
     [SerializeField] private HexMapManager _hexMapManager;
+
+    [Header("LocalData")]
+    [SerializeField] private HexTypesContainer _hexTypesContainer;
+    
     readonly SignalBus _signalBus;
     
    public override void InstallBindings()
@@ -12,7 +16,8 @@ public class SceneInstaller : MonoInstaller<SceneInstaller>
            SignalBusInstaller.Install(Container);
            Container.Bind<SceneInstaller>().AsSingle();
            Container.Bind<HexMapManager>().FromInstance(_hexMapManager).AsSingle();
-           
+           Container.Bind<HexTypesContainer>().FromInstance(_hexTypesContainer).AsSingle();
+
            /*Container.Bind<PlayerController>().FromInstance(_playerController).AsSingle();
            Container.Bind<AudioManager>().FromInstance(_audioManager).AsSingle();
            Container.Bind<UIManager>().FromInstance(_gameplayUIManager).AsSingle();
