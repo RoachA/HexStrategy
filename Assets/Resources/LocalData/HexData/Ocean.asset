@@ -20,3 +20,9 @@ MonoBehaviour:
     HexBaseColor: {r: 0, g: 0, b: 0, a: 0}
     IsPassable: 1
     HexSprite: {fileID: 0}
+  YieldsMap:
+    Yields:
+    - Type: 0
+      Range: {x: 0, y: 2}
+    - Type: 1
+      Range: {x: 1, y: 3}

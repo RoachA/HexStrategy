@@ -4,11 +4,11 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "HexTypesContainer", menuName = "LocalData/HexTypeContainer", order = 0)]
 public class HexTypesContainer : ScriptableObject
 {
-   [SerializeField] public List<HexTypeData> HexTypesList;
+   [SerializeField] public List<HexDefinitionData> HexTypesList;
 
-   public HexTypeData GetSurfaceType(HexSurfaceType surfaceType)
+   public HexDefinitionData GetDefinitionData(HexSurfaceType surfaceType)
    {
-      HexTypeData data = null;
+      HexDefinitionData data = null;
       
       foreach (var typeData in HexTypesList)
       {

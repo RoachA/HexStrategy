@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,6 +7,6 @@ using UnityEngine;
 /// </summary>
 public class MapResourceManager : MonoBehaviour
 {
-    public Dictionary<HexBase, List<IMapResource>> _hexResourcesMap = new Dictionary<HexBase, List<IMapResource>>();
+    public Dictionary<HexData, List<IMapResource>> _hexResourcesMap = new Dictionary<HexData, List<IMapResource>>();
     
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Sirenix.OdinInspector;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using Zenject;
@@ -22,8 +23,8 @@ public class HexMapManager : MonoBehaviour
     [SerializeField] private float YScale;
 
     private List<GameObject> _hexObjList = new List<GameObject>();
-    private Dictionary<HexBase, HexView> _hexToHexViewMap = new Dictionary<HexBase, HexView>();
-    private Dictionary<Vector3, HexBase> _posVectorToHexBaseMap = new Dictionary<Vector3, HexBase>();
+    private Dictionary<HexData, HexView> _hexToHexViewMap = new Dictionary<HexData, HexView>();
+    private Dictionary<Vector3, HexData> _posVectorToHexBaseMap = new Dictionary<Vector3, HexData>();
 
     //if the row is 0 or even south neighbors must offset +1x
     //else the north neighbors must offset -1x
@@ -63,12 +64,12 @@ public class HexMapManager : MonoBehaviour
         {
             for (int row = 0; row < _mapParams.Row; row++)
             {
-                HexBase hex = new HexBase(column, row);
+                HexData hex = new HexData(column, row);
                 var obj = Instantiate(_hexPrefab, hex.WorldPosition(), quaternion.identity, this.transform);
                 obj.name = "Q" + column.ToString() + " R" + row.ToString() + " S" + hex.S;
                 _hexObjList.Add(obj);
                 var view = obj.GetComponent<HexView>();
-                view.InitHexView(_hexTypesContainer.GetSurfaceType(HexSurfaceType.Ocean));
+                view.InitHexView(_hexTypesContainer.GetDefinitionData(HexSurfaceType.Ocean));
                 _hexToHexViewMap.Add(hex, view);
                 _posVectorToHexBaseMap.Add(new Vector3(hex.Q, hex.R, hex.S), hex);
                 _container.Inject(view);
@@ -76,6 +77,21 @@ public class HexMapManager : MonoBehaviour
         }
 
         SetupLandMass();
+    }
+
+    private List<MapResourceBase> GenerateYieldDataForHex(HexDefinitionData data)
+    {
+        var yieldsList = new List<MapResourceBase>();
+        
+        foreach (var yield in data.YieldsMap.Yields)
+        {
+            var resource = new MapResourceBase();
+            resource.Type = yield.Type;
+            resource.Value = UnityEngine.Random.Range(yield.Range.x, yield.Range.y);
+            yieldsList.Add(resource);
+        }
+
+        return yieldsList;
     }
     
     //we will run various passes to determine how the map looks. first determine the land mass.
@@ -92,24 +108,29 @@ public class HexMapManager : MonoBehaviour
         {
             noiseList.Add(val);
         }
-        
-        for (int i = 0; i < _hexObjList.Count; i++)
+
+        var index = 0;
+        foreach (var registeredHex in _hexToHexViewMap)
         {
-            var height = noiseList[i];
+            var height = noiseList[index];
             
-            if (height > _mapParams.PlainsThreshold) 
+            if (height > _mapParams.PlainsThreshold)
             {
-                var hexView = _hexObjList[i].GetComponent<HexView>(); //todo optimize
-                hexView.InitHexView(_hexTypesContainer.GetSurfaceType(HexSurfaceType.Plains));
-                _hexObjList[i].transform.localScale += YScale * Vector3.up * noiseList[i];
+                HexDefinitionData typeData = _hexTypesContainer.GetDefinitionData(HexSurfaceType.Plains); 
+                registeredHex.Value.InitHexView(typeData);
+                registeredHex.Key.SetResourceYield(GenerateYieldDataForHex(typeData));
+                registeredHex.Value.transform.localScale += YScale * Vector3.up * noiseList[index];
             } 
             
             if (height > _mapParams.MountainsThreshold) 
             {
-                var hexView = _hexObjList[i].GetComponent<HexView>(); //todo optimize
-                hexView.InitHexView(_hexTypesContainer.GetSurfaceType(HexSurfaceType.Mountain));
-                _hexObjList[i].transform.localScale += Vector3.up * 10;
+                var typeData = _hexTypesContainer.GetDefinitionData(HexSurfaceType.Mountain); 
+                registeredHex.Value.InitHexView(typeData);
+                registeredHex.Key.SetResourceYield(GenerateYieldDataForHex(typeData));
+                registeredHex.Value.transform.localScale += YScale * Vector3.up * noiseList[index];
             }
+            
+            index++;
         }
     }
     
@@ -175,7 +196,7 @@ public class HexMapManager : MonoBehaviour
     /// <param name="direction">which direction to check for neighbor</param>
     /// <param name="returnedHex">neighboring hex</param>
     /// <returns></returns>
-    public bool GetNeighborHexAtDirection(HexBase targetHex, Directions direction, out HexBase returnedHex)
+    public bool GetNeighborHexAtDirection(HexData targetHex, Directions direction, out HexData returnedHex)
     {
         returnedHex = null;
         var directionVector = GetDirectionVector(direction);
@@ -205,7 +226,7 @@ public class HexMapManager : MonoBehaviour
         return false;
     }
     
-    public HexBase GetHexBaseByView(HexView hexView)
+    public HexData GetHexBaseByView(HexView hexView)
     {
         return _hexToHexViewMap.FirstOrDefault(pair => pair.Value == hexView).Key;
     }

@@ -4,7 +4,10 @@ using Zenject;
 //https://github.com/modesttree/Zenject/blob/master/Documentation/CheatSheet.md
 public class SceneInstaller : MonoInstaller<SceneInstaller>
 {
+    [Header("Managers")]
     [SerializeField] private HexMapManager _hexMapManager;
+    [SerializeField] private MapResourceManager _mapResourceManager;
+    [SerializeField] private InteractionManager _interactionManager;
 
     [Header("LocalData")]
     [SerializeField] private HexTypesContainer _hexTypesContainer;
@@ -17,25 +20,36 @@ public class SceneInstaller : MonoInstaller<SceneInstaller>
            Container.Bind<SceneInstaller>().AsSingle();
            Container.Bind<HexMapManager>().FromInstance(_hexMapManager).AsSingle();
            Container.Bind<HexTypesContainer>().FromInstance(_hexTypesContainer).AsSingle();
-
-           /*Container.Bind<PlayerController>().FromInstance(_playerController).AsSingle();
-           Container.Bind<AudioManager>().FromInstance(_audioManager).AsSingle();
-           Container.Bind<UIManager>().FromInstance(_gameplayUIManager).AsSingle();
-        
+           Container.Bind<MapResourceManager>().FromInstance(_mapResourceManager).AsSingle();
+           Container.Bind<InteractionManager>().FromInstance(_interactionManager).AsSingle();
+           
            Container.Bind<CoreSignals>().AsSingle();
-           Container.Bind<TeleportsManager>().AsSingle();
-           Container.Bind<WorldObjectsContainer>().AsSingle();
-           Container.Bind<PlayerInventoryManager>().AsSingle();
 
-           ///SIGNALS >>>>>>>>>>>>>>>>
-           Container.DeclareSignal<CoreSignals.DoorWasOpenedSignal>();
-           Container.DeclareSignal<CoreSignals.PlayerWasSightedSignal>();
-           Container.DeclareSignal<CoreSignals.PlayerSightWasLostSignal>();
-           Container.DeclareSignal<CoreSignals.PlayerTriggeredTeleportZoneSignal>();
-           Container.DeclareSignal<CoreSignals.OnTeleportApprovedSignal>();
-           Container.DeclareSignal<CoreSignals.OnLayoutStateUpdateSignal>();
-           Container.DeclareSignal<CoreSignals.OnAffectFlashLightSignal>();
-           Container.DeclareSignal<CoreSignals.OverwriteMouseLookSensitivitySignal>();
-           Container.DeclareSignal<CoreSignals.SetCursorSignal>();*/
+           //SIGNALS >>>>>>>>>>>>>>>>
+           Container.DeclareSignal<CoreSignals.HexSelectedSignal>();
+           Container.DeclareSignal<CoreSignals.HexTargetedSignal>();
        }
+}
+
+public class CoreSignals
+{
+    public class HexSelectedSignal
+    {
+        public HexData SelectedHex;
+
+        public HexSelectedSignal(HexData hex)
+        {
+            SelectedHex = hex;
+        }
+    }
+    
+    public class HexTargetedSignal
+    {
+        public HexData TargetedHex;
+
+        public HexTargetedSignal(HexData hex)
+        {
+            TargetedHex = hex;
+        }
+    }
 }

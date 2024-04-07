@@ -1,25 +1,40 @@
 using UnityEngine;
 using Zenject;
 
-public class HexView : MonoBehaviour
+public class HexView : MonoBehaviour, IInteractable
 {
      [Inject] private HexMapManager _hexMapManager;
 
      [SerializeField] private MeshRenderer _renderer;
      [SerializeField] private MeshFilter _meshFilter;
-
-     private HexTypeData _hexData;
+     
+    // private HexData _hexBaseData;
          
     [Header("Debug")]
     [SerializeField] private HexMapManager.Directions _direction;
     [SerializeField] private float _gizmoRadius = 0.25f;
     [SerializeField] private Vector3 _gizmoOffset;
 
-    public void InitHexView(HexTypeData data)
+    private Vector3 _initScale;
+
+    public void InitHexView(HexDefinitionData data)
     {
         _renderer.sharedMaterial = data.ViewParams.HexBaseMaterial;
+        _initScale = transform.localScale;
+    }
+    
+    public void OnSelected() //this will not carry hexData, this will reach hexmanager, get hex data and then will let the requesting element know.
+    {
+    }
 
-        _hexData = data;
+    public void OnInFocus()
+    {
+        transform.localScale = Vector3.zero;
+    }
+
+    public void OnOutFocus()
+    {
+        transform.localScale = _initScale;
     }
 
 #region Gizmos
@@ -27,7 +42,7 @@ public class HexView : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         var hex = _hexMapManager.GetHexBaseByView(this);
-        HexBase nachbar = null;
+        HexData nachbar = null;
         
         if (_hexMapManager.GetNeighborHexAtDirection(hex, HexMapManager.Directions.E, out nachbar))
         {
