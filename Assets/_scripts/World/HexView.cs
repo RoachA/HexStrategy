@@ -1,15 +1,15 @@
+using System;
 using UnityEngine;
 using Zenject;
 
 public class HexView : MonoBehaviour, IInteractable
 {
-     [Inject] private HexMapManager _hexMapManager;
-
-     [SerializeField] private MeshRenderer _renderer;
-     [SerializeField] private MeshFilter _meshFilter;
+    [Inject] private readonly HexMapManager _hexMapManager;
+    [Inject] private readonly SignalBus _bus;
      
-    // private HexData _hexBaseData;
-         
+    [SerializeField] private MeshRenderer _renderer;
+    [SerializeField] private MeshFilter _meshFilter;
+    
     [Header("Debug")]
     [SerializeField] private HexMapManager.Directions _direction;
     [SerializeField] private float _gizmoRadius = 0.25f;
@@ -17,28 +17,45 @@ public class HexView : MonoBehaviour, IInteractable
 
     private Vector3 _initScale;
 
+    private void Start()
+    {
+        _bus.Subscribe<CoreSignals.HexSelectedSignal>(OnSelected);
+        _bus.Subscribe<CoreSignals.HexTargetedSignal>(OnInFocus);
+    }
+
+    private void OnDestroy()
+    {
+        _bus.TryUnsubscribe<CoreSignals.HexSelectedSignal>(OnSelected);
+        _bus.TryUnsubscribe<CoreSignals.HexTargetedSignal>(OnInFocus);
+    }
+
     public void InitHexView(HexDefinitionData data)
     {
         _renderer.sharedMaterial = data.ViewParams.HexBaseMaterial;
-        _initScale = transform.localScale;
+        _initScale = _renderer.transform.localScale;
     }
     
-    public void OnSelected() //this will not carry hexData, this will reach hexmanager, get hex data and then will let the requesting element know.
+    public void OnSelected(CoreSignals.HexSelectedSignal signal) //this will not carry hexData, this will reach hexmanager, get hex data and then will let the requesting element know.
     {
+        if (signal.SelectedHex != this) return;
+
+        var hexData = _hexMapManager.GetHexBaseByView(this);
+        
+        foreach (var resource in hexData.AvailableResources)
+        {
+            if (resource == null) return;
+            Debug.Log(gameObject.name + " " + resource.Type + " " + resource.Value);
+        }
     }
 
-    public void OnInFocus()
+    public void OnInFocus(CoreSignals.HexTargetedSignal signal)
     {
-        transform.localScale = Vector3.zero;
+        _renderer.transform.localScale = signal.TargetedHex == this ? _initScale * 0.9f : _initScale;
+        if (signal.TargetedHex != this) return;
     }
 
-    public void OnOutFocus()
-    {
-        transform.localScale = _initScale;
-    }
+    #region Gizmos
 
-#region Gizmos
-    
     private void OnDrawGizmosSelected()
     {
         var hex = _hexMapManager.GetHexBaseByView(this);
@@ -81,5 +98,5 @@ public class HexView : MonoBehaviour, IInteractable
         }
     }
     
-#endregion
+    #endregion
 }

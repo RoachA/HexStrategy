@@ -245,7 +245,9 @@ public class HexMapManager : MonoBehaviour
 [Serializable]
 public struct MapParams
 {
+    [Range(0, 100)]
     public int Column;
+    [Range(0, 100)]
     public int Row;
 
     [Header("Terrain Params")]

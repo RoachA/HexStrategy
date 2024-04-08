@@ -8,6 +8,7 @@ public class SceneInstaller : MonoInstaller<SceneInstaller>
     [SerializeField] private HexMapManager _hexMapManager;
     [SerializeField] private MapResourceManager _mapResourceManager;
     [SerializeField] private InteractionManager _interactionManager;
+    [SerializeField] private CameraManager _cameraManager;
 
     [Header("LocalData")]
     [SerializeField] private HexTypesContainer _hexTypesContainer;
@@ -22,6 +23,7 @@ public class SceneInstaller : MonoInstaller<SceneInstaller>
            Container.Bind<HexTypesContainer>().FromInstance(_hexTypesContainer).AsSingle();
            Container.Bind<MapResourceManager>().FromInstance(_mapResourceManager).AsSingle();
            Container.Bind<InteractionManager>().FromInstance(_interactionManager).AsSingle();
+           Container.Bind<CameraManager>().FromInstance(_cameraManager).AsSingle();
            
            Container.Bind<CoreSignals>().AsSingle();
 
@@ -35,9 +37,9 @@ public class CoreSignals
 {
     public class HexSelectedSignal
     {
-        public HexData SelectedHex;
+        public IInteractable SelectedHex;
 
-        public HexSelectedSignal(HexData hex)
+        public HexSelectedSignal(IInteractable hex)
         {
             SelectedHex = hex;
         }
@@ -45,9 +47,9 @@ public class CoreSignals
     
     public class HexTargetedSignal
     {
-        public HexData TargetedHex;
+        public IInteractable TargetedHex;
 
-        public HexTargetedSignal(HexData hex)
+        public HexTargetedSignal(IInteractable hex)
         {
             TargetedHex = hex;
         }
